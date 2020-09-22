@@ -25,3 +25,9 @@ pub struct Data {
     #[serde(rename(serialize = "text/plain"))]
     pub text_plain: Option<Vec<String>>,
 }
+
+#[derive(clap::Clap)]
+pub struct Opts {
+    #[clap(short, long)]
+    pub input_file: String,
+}
