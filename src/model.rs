@@ -28,6 +28,5 @@ pub struct Data {
 
 #[derive(clap::Clap)]
 pub struct Opts {
-    #[clap(short, long)]
-    pub input_file: String,
+    pub input: String,
 }

@@ -4,7 +4,7 @@ use nbcat::{Cell, Ipynb, Opts};
 fn main() -> anyhow::Result<()> {
     let opts = Opts::parse();
 
-    let file = std::fs::read_to_string(&opts.input_file)?;
+    let file = std::fs::read_to_string(&opts.input)?;
     let ipynb: Ipynb = serde_json::from_str(&file)?;
     for cell in ipynb.cells {
         display_source(&cell);
