@@ -22,7 +22,7 @@ pub struct Output {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Data {
-    #[serde(rename(serialize = "text/plain"))]
+    #[serde(rename(serialize = "text/plain", deserialize = "text/plain"))]
     pub text_plain: Option<Vec<String>>,
 }
 
