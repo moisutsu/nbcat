@@ -8,9 +8,9 @@ fn main() -> anyhow::Result<()> {
     let ipynb: Ipynb = serde_json::from_str(&file)?;
     for cell in ipynb.cells {
         display_source(&cell);
-        println!("");
+        println!();
         display_output(&cell);
-        println!("");
+        println!();
     }
     Ok(())
 }
