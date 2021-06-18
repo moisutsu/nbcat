@@ -26,15 +26,15 @@ fn display_source(cell: &Cell) {
 }
 
 fn display_output(cell: &Cell) {
+    println!(
+        "Out: [{}]",
+        if let Some(execution_count) = cell.execution_count {
+            execution_count.to_string()
+        } else {
+            " ".to_string()
+        }
+    );
     for output in cell.outputs.iter() {
-        println!(
-            "Out: [{}]",
-            if let Some(execution_count) = cell.execution_count {
-                execution_count.to_string()
-            } else {
-                " ".to_string()
-            }
-        );
         if let Some(text) = &output.text {
             println!("{}", text.join(""));
         } else if let Some(data) = &output.data {
