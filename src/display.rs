@@ -1,6 +1,12 @@
-use crate::Cell;
+use crate::{Cell, Ipynb};
 
-pub fn display_cell(cell: &Cell) {
+pub fn display_ipynb(ipynb: &Ipynb) {
+    for cell in &ipynb.cells {
+        display_cell(cell);
+    }
+}
+
+fn display_cell(cell: &Cell) {
     display_source(&cell);
     println!();
     display_output(&cell);
