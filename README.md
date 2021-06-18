@@ -11,17 +11,7 @@
 ## Install
 
 ```sh
-git clone https://github.com/moisutsu/nbcat
-cargo install --path nbcat
-```
-
-## Update
-
-In `nbcat` dir
-
-```sh
-git pull
-cargo install --path .
+cargo install nbcat
 ```
 
 ## Usage
