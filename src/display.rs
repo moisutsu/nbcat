@@ -1,3 +1,5 @@
+use image::DynamicImage;
+
 use crate::{Cell, Ipynb};
 
 pub fn display_ipynb(ipynb: &Ipynb) {
@@ -38,9 +40,23 @@ fn display_output(cell: &Cell) {
         if let Some(text) = &output.text {
             println!("{}", text.join(""));
         } else if let Some(data) = &output.data {
-            if let Some(text_plain) = &data.text_plain {
+            if let Some(image_png) = &data.image_png {
+                display_image_png(image_png);
+            } else if let Some(text_plain) = &data.text_plain {
                 println!("{}", text_plain.join(""));
             }
         }
     }
+}
+
+fn display_image_png(image_png: &str) {
+    let img = image::load_from_memory(&base64::decode(image_png.trim_end()).unwrap()[..]).unwrap();
+
+    let display_config = viuer::Config {
+        transparent: true,
+        absolute_offset: false,
+        ..Default::default()
+    };
+
+    viuer::print(&DynamicImage::ImageRgb8(img.to_rgb8()), &display_config).unwrap();
 }
