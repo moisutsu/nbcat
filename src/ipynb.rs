@@ -24,4 +24,6 @@ pub struct Output {
 pub struct Data {
     #[serde(rename(serialize = "text/plain", deserialize = "text/plain"))]
     pub text_plain: Option<Vec<String>>,
+    #[serde(rename(serialize = "image/png", deserialize = "image/png"))]
+    pub image_png: Option<String>,
 }
