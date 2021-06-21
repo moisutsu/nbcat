@@ -31,14 +31,16 @@ fn display_source(cell: &Cell) {
 }
 
 fn display_output(cell: &Cell) -> Result<()> {
-    println!(
-        "Out: [{}]",
-        if let Some(execution_count) = cell.execution_count {
-            execution_count.to_string()
-        } else {
-            " ".to_string()
-        }
-    );
+    if cell.outputs.is_empty() {
+        return Ok(());
+    }
+
+    if let Some(execution_count) = cell.execution_count {
+        println!("Out: [{}]", execution_count);
+    } else {
+        return Ok(());
+    }
+
     for output in cell.outputs.iter() {
         if let Some(text) = &output.text {
             println!("{}", text.join(""));
