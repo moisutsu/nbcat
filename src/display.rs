@@ -1,7 +1,7 @@
 use anyhow::Result;
 use image::DynamicImage;
 
-use crate::{Cell, Ipynb};
+use crate::{Cell, Ipynb, Output};
 
 pub fn display_ipynb(ipynb: &Ipynb) -> Result<()> {
     for cell in &ipynb.cells {
@@ -42,14 +42,28 @@ fn display_output(cell: &Cell) -> Result<()> {
     }
 
     for output in cell.outputs.iter() {
-        if let Some(text) = &output.text {
-            println!("{}", text.join(""));
-        } else if let Some(data) = &output.data {
-            if let Some(image_png) = &data.image_png {
-                display_image_png(image_png)?;
-            } else if let Some(text_plain) = &data.text_plain {
-                println!("{}", text_plain.join(""));
-            }
+        match &output.output_type[..] {
+            "stream" => display_stream(output),
+            "display_data" => display_data(output)?,
+            "error" => display_error(output),
+            _ => continue,
+        }
+    }
+    Ok(())
+}
+
+fn display_stream(output: &Output) {
+    if let Some(text) = &output.text {
+        println!("{}", text.join(""));
+    }
+}
+
+fn display_data(output: &Output) -> Result<()> {
+    if let Some(data) = &output.data {
+        if let Some(image_png) = &data.image_png {
+            display_image_png(image_png)?;
+        } else if let Some(text_plain) = &data.text_plain {
+            println!("{}", text_plain.join(""));
         }
     }
     Ok(())
@@ -66,4 +80,10 @@ fn display_image_png(image_png: &str) -> Result<()> {
 
     viuer::print(&DynamicImage::ImageRgb8(img.to_rgb8()), &display_config)?;
     Ok(())
+}
+
+fn display_error(output: &Output) {
+    if let Some(traceback) = &output.traceback {
+        println!("{}", traceback.join(""));
+    }
 }
