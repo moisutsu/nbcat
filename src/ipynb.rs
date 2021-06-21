@@ -18,6 +18,7 @@ pub struct Output {
     pub output_type: String,
     pub data: Option<Data>,
     pub text: Option<Vec<String>>,
+    pub traceback: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
