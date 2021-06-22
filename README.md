@@ -16,9 +16,15 @@ cargo install nbcat
 
 ## Usage
 
+You can view the .ipynb file on the terminal by simply passing the path, as in the `cat` command.
+
 ```sh
 nbcat <file-name>
 ```
+
+Even notebooks that include graphs can be displayed.
+
+![Display notebook include graph](image/display_notebook_include_graph.png)
 
 ## Author
 
