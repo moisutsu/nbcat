@@ -1,20 +1,43 @@
 use anyhow::Result;
 use image::DynamicImage;
+use once_cell::sync::Lazy;
+use terminal_size::{terminal_size, Height, Width};
 
 use crate::{Cell, Ipynb, Output};
 
+static TERMINAL_WIDTH: Lazy<usize> = Lazy::new(|| {
+    let (Width(width), _) = terminal_size().unwrap_or((Width(0), Height(0)));
+    width as usize
+});
+
 pub fn display_ipynb(ipynb: &Ipynb) -> Result<()> {
-    for cell in &ipynb.cells {
+    for i in 0..ipynb.cells.len() {
+        let cell = &ipynb.cells[i];
         display_cell(cell)?;
+
+        if i != ipynb.cells.len() - 1 {
+            println!();
+        }
     }
     Ok(())
 }
 
 fn display_cell(cell: &Cell) -> Result<()> {
+    println!(
+        "{}",
+        std::iter::repeat("=")
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
     display_source(&cell);
-    println!();
+
     display_output(&cell)?;
-    println!();
+    println!(
+        "{}",
+        std::iter::repeat("=")
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
     Ok(())
 }
 
@@ -36,6 +59,12 @@ fn display_output(cell: &Cell) -> Result<()> {
     }
 
     if let Some(execution_count) = cell.execution_count {
+        println!(
+            "{}",
+            std::iter::repeat("·")
+                .take(*TERMINAL_WIDTH)
+                .collect::<String>()
+        );
         println!("Out: [{}]", execution_count);
     } else {
         return Ok(());
