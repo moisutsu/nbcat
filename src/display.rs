@@ -23,6 +23,16 @@ pub fn display_ipynb(ipynb: &Ipynb) -> Result<()> {
 }
 
 fn display_cell(cell: &Cell) -> Result<()> {
+    match &cell.cell_type[..] {
+        "code" => display_code(cell)?,
+        "markdown" => display_markdown(cell),
+        "raw" => display_raw(cell),
+        _ => return Ok(()),
+    };
+    Ok(())
+}
+
+fn display_code(cell: &Cell) -> Result<()> {
     println!(
         "[{}]:",
         if let Some(execution_count) = cell.execution_count {
@@ -31,24 +41,23 @@ fn display_cell(cell: &Cell) -> Result<()> {
             " ".to_string()
         }
     );
-    println!(
-        "{}",
-        std::iter::repeat("=")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
 
+    print_with_terminal_width('=');
     display_source(&cell);
-
     display_output(&cell)?;
+    print_with_terminal_width('=');
 
-    println!(
-        "{}",
-        std::iter::repeat("=")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
     Ok(())
+}
+
+fn display_markdown(cell: &Cell) {
+    display_source(&cell);
+}
+
+fn display_raw(cell: &Cell) {
+    print_with_terminal_width('=');
+    display_source(&cell);
+    print_with_terminal_width('=');
 }
 
 fn display_source(cell: &Cell) {
@@ -56,18 +65,19 @@ fn display_source(cell: &Cell) {
 }
 
 fn display_output(cell: &Cell) -> Result<()> {
-    if cell.outputs.is_empty() {
+    let outputs = if let Some(outputs) = &cell.outputs {
+        outputs
+    } else {
+        return Ok(());
+    };
+
+    if outputs.is_empty() {
         return Ok(());
     }
 
-    println!(
-        "{}",
-        std::iter::repeat("·")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
+    print_with_terminal_width('·');
 
-    for output in cell.outputs.iter() {
+    for output in outputs.iter() {
         match &output.output_type[..] {
             "stream" => display_stream(output),
             "display_data" | "execute_result" => display_data(output)?,
@@ -95,6 +105,12 @@ fn display_data(output: &Output) -> Result<()> {
     Ok(())
 }
 
+fn display_error(output: &Output) {
+    if let Some(traceback) = &output.traceback {
+        println!("{}", traceback.join("").trim_end_matches('\n'));
+    }
+}
+
 fn display_image_png(image_png: &str) -> Result<()> {
     let img = image::load_from_memory(&base64::decode(image_png.trim_end())?[..])?;
 
@@ -108,8 +124,11 @@ fn display_image_png(image_png: &str) -> Result<()> {
     Ok(())
 }
 
-fn display_error(output: &Output) {
-    if let Some(traceback) = &output.traceback {
-        println!("{}", traceback.join("").trim_end_matches('\n'));
-    }
+fn print_with_terminal_width(c: char) {
+    println!(
+        "{}",
+        std::iter::repeat(c)
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
 }

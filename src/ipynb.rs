@@ -9,7 +9,7 @@ pub struct Ipynb {
 pub struct Cell {
     pub cell_type: String,
     pub execution_count: Option<i32>,
-    pub outputs: Vec<Output>,
+    pub outputs: Option<Vec<Output>>,
     pub source: Vec<String>,
 }
 
