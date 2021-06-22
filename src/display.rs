@@ -23,6 +23,16 @@ pub fn display_ipynb(ipynb: &Ipynb) -> Result<()> {
 }
 
 fn display_cell(cell: &Cell) -> Result<()> {
+    match &cell.cell_type[..] {
+        "code" => display_code(cell)?,
+        "markdown" => display_markdown(cell),
+        "raw" => display_raw(cell),
+        _ => return Ok(()),
+    };
+    Ok(())
+}
+
+fn display_code(cell: &Cell) -> Result<()> {
     println!(
         "[{}]:",
         if let Some(execution_count) = cell.execution_count {
@@ -49,6 +59,28 @@ fn display_cell(cell: &Cell) -> Result<()> {
             .collect::<String>()
     );
     Ok(())
+}
+
+fn display_markdown(cell: &Cell) {
+    display_source(&cell);
+}
+
+fn display_raw(cell: &Cell) {
+    println!(
+        "{}",
+        std::iter::repeat("=")
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
+
+    display_source(&cell);
+
+    println!(
+        "{}",
+        std::iter::repeat("=")
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
 }
 
 fn display_source(cell: &Cell) {
@@ -101,6 +133,12 @@ fn display_data(output: &Output) -> Result<()> {
     Ok(())
 }
 
+fn display_error(output: &Output) {
+    if let Some(traceback) = &output.traceback {
+        println!("{}", traceback.join("").trim_end_matches('\n'));
+    }
+}
+
 fn display_image_png(image_png: &str) -> Result<()> {
     let img = image::load_from_memory(&base64::decode(image_png.trim_end())?[..])?;
 
@@ -112,10 +150,4 @@ fn display_image_png(image_png: &str) -> Result<()> {
 
     viuer::print(&DynamicImage::ImageRgb8(img.to_rgb8()), &display_config)?;
     Ok(())
-}
-
-fn display_error(output: &Output) {
-    if let Some(traceback) = &output.traceback {
-        println!("{}", traceback.join("").trim_end_matches('\n'));
-    }
 }
