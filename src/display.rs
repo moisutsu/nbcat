@@ -83,7 +83,7 @@ fn display_output(cell: &Cell) -> Result<()> {
 
 fn display_stream(output: &Output) {
     if let Some(text) = &output.text {
-        println!("{}", text.join(""));
+        println!("{}", text.join("").trim_end_matches('\n'));
     }
 }
 
@@ -92,7 +92,7 @@ fn display_data(output: &Output) -> Result<()> {
         if let Some(image_png) = &data.image_png {
             display_image_png(image_png)?;
         } else if let Some(text_plain) = &data.text_plain {
-            println!("{}", text_plain.join(""));
+            println!("{}", text_plain.join("").trim_end_matches('\n'));
         }
     }
     Ok(())
@@ -113,6 +113,6 @@ fn display_image_png(image_png: &str) -> Result<()> {
 
 fn display_error(output: &Output) {
     if let Some(traceback) = &output.traceback {
-        println!("{}", traceback.join(""));
+        println!("{}", traceback.join("").trim_end_matches('\n'));
     }
 }
