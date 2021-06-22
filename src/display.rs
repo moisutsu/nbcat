@@ -24,14 +24,24 @@ pub fn display_ipynb(ipynb: &Ipynb) -> Result<()> {
 
 fn display_cell(cell: &Cell) -> Result<()> {
     println!(
+        "[{}]:",
+        if let Some(execution_count) = cell.execution_count {
+            execution_count.to_string()
+        } else {
+            " ".to_string()
+        }
+    );
+    println!(
         "{}",
         std::iter::repeat("=")
             .take(*TERMINAL_WIDTH)
             .collect::<String>()
     );
+
     display_source(&cell);
 
     display_output(&cell)?;
+
     println!(
         "{}",
         std::iter::repeat("=")
@@ -42,14 +52,6 @@ fn display_cell(cell: &Cell) -> Result<()> {
 }
 
 fn display_source(cell: &Cell) {
-    println!(
-        "In: [{}]",
-        if let Some(execution_count) = cell.execution_count {
-            execution_count.to_string()
-        } else {
-            " ".to_string()
-        }
-    );
     println!("{}", cell.source.join(""));
 }
 
@@ -58,17 +60,12 @@ fn display_output(cell: &Cell) -> Result<()> {
         return Ok(());
     }
 
-    if let Some(execution_count) = cell.execution_count {
-        println!(
-            "{}",
-            std::iter::repeat("·")
-                .take(*TERMINAL_WIDTH)
-                .collect::<String>()
-        );
-        println!("Out: [{}]", execution_count);
-    } else {
-        return Ok(());
-    }
+    println!(
+        "{}",
+        std::iter::repeat("·")
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
 
     for output in cell.outputs.iter() {
         match &output.output_type[..] {
