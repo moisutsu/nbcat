@@ -73,7 +73,7 @@ fn display_output(cell: &Cell) -> Result<()> {
     for output in cell.outputs.iter() {
         match &output.output_type[..] {
             "stream" => display_stream(output),
-            "display_data" => display_data(output)?,
+            "display_data" | "execute_result" => display_data(output)?,
             "error" => display_error(output),
             _ => continue,
         }
