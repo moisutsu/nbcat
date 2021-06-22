@@ -41,23 +41,12 @@ fn display_code(cell: &Cell) -> Result<()> {
             " ".to_string()
         }
     );
-    println!(
-        "{}",
-        std::iter::repeat("=")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
 
+    print_with_terminal_width('=');
     display_source(&cell);
-
     display_output(&cell)?;
+    print_with_terminal_width('=');
 
-    println!(
-        "{}",
-        std::iter::repeat("=")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
     Ok(())
 }
 
@@ -66,21 +55,9 @@ fn display_markdown(cell: &Cell) {
 }
 
 fn display_raw(cell: &Cell) {
-    println!(
-        "{}",
-        std::iter::repeat("=")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
-
+    print_with_terminal_width('=');
     display_source(&cell);
-
-    println!(
-        "{}",
-        std::iter::repeat("=")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
+    print_with_terminal_width('=');
 }
 
 fn display_source(cell: &Cell) {
@@ -98,12 +75,7 @@ fn display_output(cell: &Cell) -> Result<()> {
         return Ok(());
     }
 
-    println!(
-        "{}",
-        std::iter::repeat("·")
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
+    print_with_terminal_width('·');
 
     for output in outputs.iter() {
         match &output.output_type[..] {
@@ -150,4 +122,13 @@ fn display_image_png(image_png: &str) -> Result<()> {
 
     viuer::print(&DynamicImage::ImageRgb8(img.to_rgb8()), &display_config)?;
     Ok(())
+}
+
+fn print_with_terminal_width(c: char) {
+    println!(
+        "{}",
+        std::iter::repeat(c)
+            .take(*TERMINAL_WIDTH)
+            .collect::<String>()
+    );
 }
