@@ -56,7 +56,13 @@ fn display_source(cell: &Cell) {
 }
 
 fn display_output(cell: &Cell) -> Result<()> {
-    if cell.outputs.is_empty() {
+    let outputs = if let Some(outputs) = &cell.outputs {
+        outputs
+    } else {
+        return Ok(());
+    };
+
+    if outputs.is_empty() {
         return Ok(());
     }
 
@@ -67,7 +73,7 @@ fn display_output(cell: &Cell) -> Result<()> {
             .collect::<String>()
     );
 
-    for output in cell.outputs.iter() {
+    for output in outputs.iter() {
         match &output.output_type[..] {
             "stream" => display_stream(output),
             "display_data" | "execute_result" => display_data(output)?,
