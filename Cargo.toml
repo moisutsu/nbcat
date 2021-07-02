@@ -1,6 +1,6 @@
 [package]
 name = "nbcat"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["moisutsu <moisutsu@gmail.com>"]
 edition = "2018"
 description = "A command-line tool that displays .ipynb file like `cat` command"

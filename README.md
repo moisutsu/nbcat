@@ -1,6 +1,6 @@
 <h1 align="center">Welcome to nbcat 👋</h1>
 <p>
-  <img alt="Version" src="https://img.shields.io/badge/version-0.2.2-blue.svg?cacheSeconds=2592000" />
+  <img alt="Version" src="https://img.shields.io/badge/version-0.2.3-blue.svg?cacheSeconds=2592000" />
   <a href="https://twitter.com/moisutsu" target="_blank">
     <img alt="Twitter: moisutsu" src="https://img.shields.io/twitter/follow/moisutsu.svg?style=social" />
   </a>
