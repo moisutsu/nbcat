@@ -1,12 +1,11 @@
 use anyhow::Result;
 use image::DynamicImage;
 use once_cell::sync::Lazy;
-use terminal_size::{terminal_size, Height, Width};
 
 use crate::{Cell, Ipynb, Output};
 
 static TERMINAL_WIDTH: Lazy<usize> = Lazy::new(|| {
-    let (Width(width), _) = terminal_size().unwrap_or((Width(0), Height(0)));
+    let (width, _) = term_size::dimensions().unwrap_or_default();
     width as usize
 });
 
