@@ -42,20 +42,20 @@ fn display_code(cell: &Cell) -> Result<()> {
     );
 
     print_with_terminal_width('=');
-    display_source(&cell);
-    display_output(&cell)?;
+    display_source(cell);
+    display_output(cell)?;
     print_with_terminal_width('=');
 
     Ok(())
 }
 
 fn display_markdown(cell: &Cell) {
-    display_source(&cell);
+    display_source(cell);
 }
 
 fn display_raw(cell: &Cell) {
     print_with_terminal_width('=');
-    display_source(&cell);
+    display_source(cell);
     print_with_terminal_width('=');
 }
 
