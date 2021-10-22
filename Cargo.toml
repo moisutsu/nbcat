@@ -2,7 +2,7 @@
 name = "nbcat"
 version = "0.2.3"
 authors = ["moisutsu <moisutsu@gmail.com>"]
-edition = "2018"
+edition = "2021"
 description = "A command-line tool that displays .ipynb file like `cat` command"
 repository = "https://github.com/moisutsu/nbcat"
 license = "MIT"
