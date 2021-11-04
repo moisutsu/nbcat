@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use nbcat::{display_ipynb, Opts};
 
 fn main() -> Result<()> {
