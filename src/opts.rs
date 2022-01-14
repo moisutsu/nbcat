@@ -1,8 +1,8 @@
-use clap::{crate_authors, crate_description, crate_version, Parser};
+use clap::Parser;
 
 #[derive(Parser)]
-#[clap(version = crate_version!(), author = crate_authors!(), about = crate_description!())]
+#[clap(author, version, about)]
 pub struct Opts {
-    #[clap(about = "Input ipynb file path")]
+    #[clap(help = "Input ipynb file path")]
     pub input: String,
 }
