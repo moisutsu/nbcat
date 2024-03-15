@@ -13,6 +13,14 @@
 
 ## Install
 
+Homebrew
+
+```sh
+brew install moisutsu/tap/nbcat
+```
+
+Cargo
+
 ```sh
 cargo install nbcat
 ```
