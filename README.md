@@ -33,7 +33,10 @@ You can view the .ipynb file on the terminal by simply passing the path, as in t
 nbcat <file-name>
 ```
 
-Even notebooks that include graphs can be displayed.
+### Features
+
+- Display notebooks containing images
+- Option to ignore cell output (`--ignore-output`)
 
 ![Display notebook include graph](image/display_notebook_include_graph.png)
 
