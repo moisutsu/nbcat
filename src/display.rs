@@ -1,133 +1,155 @@
 use anyhow::Result;
 use image::DynamicImage;
-use once_cell::sync::Lazy;
 
-use crate::{Cell, Ipynb, Output};
+use crate::{Cell, Ipynb, Opts, Output};
 
-static TERMINAL_WIDTH: Lazy<usize> = Lazy::new(|| {
-    let (width, _) = term_size::dimensions().unwrap_or_default();
-    width as usize
-});
+pub struct DisplayIpynb {
+    ipynb: Ipynb,
+    opts: Opts,
+    terminal_width: usize,
+}
 
-pub fn display_ipynb(ipynb: &Ipynb) -> Result<()> {
-    for i in 0..ipynb.cells.len() {
-        let cell = &ipynb.cells[i];
-        display_cell(cell)?;
+impl DisplayIpynb {
+    pub fn new(ipynb: Ipynb, opts: Opts) -> DisplayIpynb {
+        let (terminal_width, _) = term_size::dimensions().unwrap_or_default();
 
-        if i != ipynb.cells.len() - 1 {
-            println!();
+        DisplayIpynb {
+            ipynb,
+            opts,
+            terminal_width,
         }
     }
-    Ok(())
-}
 
-fn display_cell(cell: &Cell) -> Result<()> {
-    match &cell.cell_type[..] {
-        "code" => display_code(cell)?,
-        "markdown" => display_markdown(cell),
-        "raw" => display_raw(cell),
-        _ => return Ok(()),
-    };
-    Ok(())
-}
+    pub fn display(&self) -> Result<()> {
+        self.display_ipynb(&self.ipynb)?;
 
-fn display_code(cell: &Cell) -> Result<()> {
-    println!(
-        "[{}]:",
-        if let Some(execution_count) = cell.execution_count {
-            execution_count.to_string()
+        Ok(())
+    }
+
+    pub fn display_ipynb(&self, ipynb: &Ipynb) -> Result<()> {
+        for i in 0..ipynb.cells.len() {
+            let cell = &ipynb.cells[i];
+            self.display_cell(cell)?;
+
+            if i != ipynb.cells.len() - 1 {
+                println!();
+            }
+        }
+        Ok(())
+    }
+
+    fn display_cell(&self, cell: &Cell) -> Result<()> {
+        match &cell.cell_type[..] {
+            "code" => self.display_code(cell)?,
+            "markdown" => self.display_markdown(cell),
+            "raw" => self.display_raw(cell),
+            _ => return Ok(()),
+        };
+        Ok(())
+    }
+
+    fn display_code(&self, cell: &Cell) -> Result<()> {
+        println!(
+            "[{}]:",
+            if let Some(execution_count) = cell.execution_count {
+                execution_count.to_string()
+            } else {
+                " ".to_string()
+            }
+        );
+
+        self.print_with_terminal_width('=');
+        self.display_source(cell);
+
+        if !self.opts.ignore_output {
+            self.display_output(cell)?;
+        }
+
+        self.print_with_terminal_width('=');
+
+        Ok(())
+    }
+
+    fn display_markdown(&self, cell: &Cell) {
+        self.display_source(cell);
+    }
+
+    fn display_raw(&self, cell: &Cell) {
+        self.print_with_terminal_width('=');
+        self.display_source(cell);
+        self.print_with_terminal_width('=');
+    }
+
+    fn display_source(&self, cell: &Cell) {
+        println!("{}", cell.source.join(""));
+    }
+
+    fn display_output(&self, cell: &Cell) -> Result<()> {
+        let outputs = if let Some(outputs) = &cell.outputs {
+            outputs
         } else {
-            " ".to_string()
+            return Ok(());
+        };
+
+        if outputs.is_empty() {
+            return Ok(());
         }
-    );
 
-    print_with_terminal_width('=');
-    display_source(cell);
-    display_output(cell)?;
-    print_with_terminal_width('=');
+        self.print_with_terminal_width('·');
 
-    Ok(())
-}
-
-fn display_markdown(cell: &Cell) {
-    display_source(cell);
-}
-
-fn display_raw(cell: &Cell) {
-    print_with_terminal_width('=');
-    display_source(cell);
-    print_with_terminal_width('=');
-}
-
-fn display_source(cell: &Cell) {
-    println!("{}", cell.source.join(""));
-}
-
-fn display_output(cell: &Cell) -> Result<()> {
-    let outputs = if let Some(outputs) = &cell.outputs {
-        outputs
-    } else {
-        return Ok(());
-    };
-
-    if outputs.is_empty() {
-        return Ok(());
+        for output in outputs.iter() {
+            match &output.output_type[..] {
+                "stream" => self.display_stream(output),
+                "display_data" | "execute_result" => self.display_data(output)?,
+                "error" => self.display_error(output),
+                _ => continue,
+            }
+        }
+        Ok(())
     }
 
-    print_with_terminal_width('·');
-
-    for output in outputs.iter() {
-        match &output.output_type[..] {
-            "stream" => display_stream(output),
-            "display_data" | "execute_result" => display_data(output)?,
-            "error" => display_error(output),
-            _ => continue,
+    fn display_stream(&self, output: &Output) {
+        if let Some(text) = &output.text {
+            println!("{}", text.join("").trim_end_matches('\n'));
         }
     }
-    Ok(())
-}
 
-fn display_stream(output: &Output) {
-    if let Some(text) = &output.text {
-        println!("{}", text.join("").trim_end_matches('\n'));
+    fn display_data(&self, output: &Output) -> Result<()> {
+        if let Some(data) = &output.data {
+            if let Some(image_png) = &data.image_png {
+                self.display_image_png(image_png)?;
+            } else if let Some(text_plain) = &data.text_plain {
+                println!("{}", text_plain.join("").trim_end_matches('\n'));
+            }
+        }
+        Ok(())
     }
-}
 
-fn display_data(output: &Output) -> Result<()> {
-    if let Some(data) = &output.data {
-        if let Some(image_png) = &data.image_png {
-            display_image_png(image_png)?;
-        } else if let Some(text_plain) = &data.text_plain {
-            println!("{}", text_plain.join("").trim_end_matches('\n'));
+    fn display_error(&self, output: &Output) {
+        if let Some(traceback) = &output.traceback {
+            println!("{}", traceback.join("").trim_end_matches('\n'));
         }
     }
-    Ok(())
-}
 
-fn display_error(output: &Output) {
-    if let Some(traceback) = &output.traceback {
-        println!("{}", traceback.join("").trim_end_matches('\n'));
+    fn display_image_png(&self, image_png: &str) -> Result<()> {
+        let img = image::load_from_memory(&base64::decode(image_png.trim_end())?[..])?;
+
+        let display_config = viuer::Config {
+            transparent: true,
+            absolute_offset: false,
+            ..Default::default()
+        };
+
+        viuer::print(&DynamicImage::ImageRgb8(img.to_rgb8()), &display_config)?;
+        Ok(())
     }
-}
 
-fn display_image_png(image_png: &str) -> Result<()> {
-    let img = image::load_from_memory(&base64::decode(image_png.trim_end())?[..])?;
-
-    let display_config = viuer::Config {
-        transparent: true,
-        absolute_offset: false,
-        ..Default::default()
-    };
-
-    viuer::print(&DynamicImage::ImageRgb8(img.to_rgb8()), &display_config)?;
-    Ok(())
-}
-
-fn print_with_terminal_width(c: char) {
-    println!(
-        "{}",
-        std::iter::repeat(c)
-            .take(*TERMINAL_WIDTH)
-            .collect::<String>()
-    );
+    fn print_with_terminal_width(&self, c: char) {
+        println!(
+            "{}",
+            std::iter::repeat(c)
+                .take(self.terminal_width)
+                .collect::<String>()
+        );
+    }
 }
